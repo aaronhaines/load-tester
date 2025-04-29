@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Cache Tester Project Overview
+
+This is a React + TypeScript project built with Vite. The project uses modern tooling and follows best practices for React development.
+
+## Key Files
+- [vite.config.ts](mdc:vite.config.ts) - Main Vite configuration file
+- [index.html](mdc:index.html) - Entry HTML file
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+- [package.json](mdc:package.json) - Project dependencies and scripts
+
+## Directory Structure
+- `src/` - Main source code directory
+  - `assets/` - Static assets like images, fonts, etc.
+- `public/` - Public assets served as-is
+
+## Development
+The project uses:
+- React 19 with TypeScript
+- Vite for fast development and building
+- ESLint for code quality
+- Modern TypeScript configuration

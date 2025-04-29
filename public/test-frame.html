@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Frame</title>
+  </head>
+  <body>
+    <script>
+      let loadedScripts = 0;
+      const timings = [];
+
+      window.addEventListener("message", (event) => {
+        if (event.data.type === "START_TEST") {
+          const { urls, iframeId } = event.data;
+          loadScripts(urls, iframeId);
+        }
+      });
+
+      function loadScripts(urls, iframeId) {
+        const startTime = performance.now();
+
+        urls.forEach((url, index) => {
+          const script = document.createElement("script");
+          const timing = { url, startTime: 0, endTime: 0, duration: 0 };
+
+          script.onload = () => {
+            timing.endTime = performance.now();
+            timing.duration = timing.endTime - timing.startTime;
+            loadedScripts++;
+
+            if (loadedScripts === urls.length) {
+              const result = {
+                type: "TEST_COMPLETE",
+                iframeId,
+                timings,
+                totalDuration: performance.now() - startTime,
+              };
+              window.parent.postMessage(result, "*");
+            }
+          };
+
+          script.onerror = () => {
+            timing.endTime = performance.now();
+            timing.duration = timing.endTime - timing.startTime;
+            loadedScripts++;
+
+            if (loadedScripts === urls.length) {
+              const result = {
+                type: "TEST_COMPLETE",
+                iframeId,
+                timings,
+                totalDuration: performance.now() - startTime,
+              };
+              window.parent.postMessage(result, "*");
+            }
+          };
+
+          timing.startTime = performance.now();
+          script.src = url;
+          timings.push(timing);
+          document.body.appendChild(script);
+        });
+      }
+    </script>
+  </body>
+</html>

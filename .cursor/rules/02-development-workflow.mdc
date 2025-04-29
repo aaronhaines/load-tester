@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Workflow
+
+## Available Scripts
+The following npm scripts are available (defined in [package.json](mdc:package.json)):
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## TypeScript Configuration
+The project uses a multi-tsconfig setup:
+- [tsconfig.json](mdc:tsconfig.json) - Base TypeScript configuration
+- [tsconfig.app.json](mdc:tsconfig.app.json) - App-specific configuration
+- [tsconfig.node.json](mdc:tsconfig.node.json) - Node.js specific configuration
+
+## Code Quality
+ESLint is configured in [eslint.config.js](mdc:eslint.config.js) with modern React best practices including:
+- React Hooks rules
+- React Refresh
+- TypeScript-specific rules

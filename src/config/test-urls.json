@@ -1,0 +1,26 @@
+{
+  "defaultIframeCount": 3,
+  "urls": [
+    "https://example.com/script1.js",
+    "https://example.com/script2.js",
+    "https://example.com/script3.js"
+  ],
+  "testSets": {
+    "small": {
+      "name": "Small Test Set",
+      "urls": [
+        "https://example.com/small/script1.js",
+        "https://example.com/small/script2.js"
+      ]
+    },
+    "large": {
+      "name": "Large Test Set",
+      "urls": [
+        "https://example.com/large/script1.js",
+        "https://example.com/large/script2.js",
+        "https://example.com/large/script3.js",
+        "https://example.com/large/script4.js"
+      ]
+    }
+  }
+}

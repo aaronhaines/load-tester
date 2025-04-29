@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Build and Deployment Guide
+
+## Build Process
+The build process is managed by Vite and configured in [vite.config.ts](mdc:vite.config.ts). The process:
+
+1. TypeScript compilation using the project's tsconfig files
+2. Vite bundling and optimization
+3. Output generation in the `dist/` directory
+
+## Build Configuration
+- Development builds include source maps and hot module replacement
+- Production builds are optimized for performance
+- Static assets in `public/` are copied as-is to the build output
+- Assets in `src/assets/` are processed and optimized
+
+## Deployment Considerations
+- The project generates static files that can be served from any web server
+- All routes should be configured to fall back to `index.html` for SPA support
+- Environment variables should be properly configured for the target environment
+
+## Performance
+- The build process includes automatic code splitting
+- React components are automatically optimized
+- Static assets are processed and optimized during build
