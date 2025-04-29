@@ -126,149 +126,227 @@ function App() {
   }, [results]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+    <div className="min-h-screen w-full bg-gray-50">
+      <div className="w-full p-4 sm:p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 px-2">
           Chrome Asset Load Contention Tester
         </h1>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Test Configuration</h2>
+        <div className="flex flex-row w-full gap-6">
+          {/* Left Column - Configuration */}
+          <div className="w-96">
+            <div className="bg-white rounded-lg shadow p-6 sticky top-6">
+              <h2 className="text-xl font-semibold mb-4">Test Configuration</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Number of iframes
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={config.iframeCount}
-                onChange={handleIframeCountChange}
-                className="input w-full max-w-xs"
-                title="Number of iframes to create"
-              />
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of iframes
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={config.iframeCount}
+                    onChange={handleIframeCountChange}
+                    className="input w-full"
+                    title="Number of iframes to create"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Test Set
-              </label>
-              <select
-                value={selectedTestSet}
-                onChange={handleTestSetChange}
-                className="input w-full max-w-xs"
-                title="Select a predefined set of test URLs"
-              >
-                <option value="">Custom URLs</option>
-                {Object.entries(urlConfig.testSets).map(([key, set]) => (
-                  <option key={key} value={key}>
-                    {set.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Test Set
+                  </label>
+                  <select
+                    value={selectedTestSet}
+                    onChange={handleTestSetChange}
+                    className="input w-full"
+                    title="Select a predefined set of test URLs"
+                  >
+                    <option value="">Custom URLs</option>
+                    {Object.entries(urlConfig.testSets).map(([key, set]) => (
+                      <option key={key} value={key}>
+                        {set.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                URLs to load (one per line)
-              </label>
-              <textarea
-                value={urlInput}
-                onChange={handleUrlInputChange}
-                className="input w-full h-32"
-                placeholder="https://example.com/script1.js&#10;https://example.com/script2.js"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    URLs to load (one per line)
+                  </label>
+                  <textarea
+                    value={urlInput}
+                    onChange={handleUrlInputChange}
+                    className="input w-full h-64"
+                    placeholder="https://example.com/script1.js&#10;https://example.com/script2.js"
+                  />
+                </div>
 
-            <div>
-              <button
-                onClick={startTest}
-                disabled={isRunning}
-                className="btn btn-primary"
-              >
-                {isRunning ? "Test Running..." : "Start Test"}
-              </button>
+                <div>
+                  <button
+                    onClick={startTest}
+                    disabled={isRunning}
+                    className="btn btn-primary w-full"
+                  >
+                    {isRunning ? "Test Running..." : "Start Test"}
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Right Column - Results */}
+          <div className="flex-1 min-w-0">
+            {isRunning && (
+              <div className="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Test Progress</h2>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${
+                          (completedFrames / config.iframeCount) * 100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {completedFrames} / {config.iframeCount}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {results && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-6">Test Results</h2>
+
+                <div className="grid grid-cols-2 gap-6 mb-8">
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium mb-3">Summary</h3>
+                    <p className="text-gray-700 mb-2">
+                      Total Duration:{" "}
+                      <span className="font-semibold">
+                        {results.totalDuration.toFixed(2)}ms
+                      </span>
+                    </p>
+                    <p className="text-gray-700">
+                      Total Frames:{" "}
+                      <span className="font-semibold">
+                        {results.results.length}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium mb-3">Statistics</h3>
+                    <p className="text-gray-700 mb-2">
+                      Average Load Time:{" "}
+                      <span className="font-semibold">
+                        {(
+                          results.results.reduce(
+                            (acc, r) => acc + r.totalDuration,
+                            0
+                          ) / results.results.length
+                        ).toFixed(2)}
+                        ms
+                      </span>
+                    </p>
+                    <p className="text-gray-700">
+                      Total Scripts:{" "}
+                      <span className="font-semibold">
+                        {results.results.reduce(
+                          (acc, r) => acc + r.timings.length,
+                          0
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <h3 className="text-lg font-medium mb-4">Frame Load Times</h3>
+                  <div className="h-80">
+                    {getChartData() && (
+                      <Bar
+                        data={getChartData()!}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            title: {
+                              display: true,
+                              text: "Frame Load Durations",
+                              padding: 20,
+                              font: {
+                                size: 16,
+                                weight: 500,
+                              },
+                            },
+                            legend: {
+                              position: "top",
+                            },
+                          },
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: "Duration (ms)",
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Detailed Results</h3>
+                  <div className="overflow-x-auto rounded-lg border border-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Frame
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Duration (ms)
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Scripts Loaded
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {results.results.map((result) => (
+                          <tr
+                            key={result.iframeId}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              Frame {result.iframeId + 1}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {result.totalDuration.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {result.timings.length}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {isRunning && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Test Progress</h2>
-            <p>
-              Completed frames: {completedFrames} / {config.iframeCount}
-            </p>
-          </div>
-        )}
-
-        {results && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Test Results</h2>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-2">Summary</h3>
-              <p>Total Duration: {results.totalDuration.toFixed(2)}ms</p>
-              <p>Total Frames: {results.results.length}</p>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-2">Frame Load Times</h3>
-              <div className="h-64">
-                {getChartData() && (
-                  <Bar
-                    data={getChartData()!}
-                    options={{
-                      responsive: true,
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: "Frame Load Durations",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium mb-2">Detailed Results</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Frame
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Duration (ms)
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Scripts Loaded
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {results.results.map((result) => (
-                      <tr key={result.iframeId}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Frame {result.iframeId + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {result.totalDuration.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {result.timings.length}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="fixed bottom-0 left-0 right-0 h-0 overflow-hidden">
           {isRunning &&
