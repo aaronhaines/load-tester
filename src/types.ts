@@ -14,6 +14,7 @@ export interface IframeResult {
 export interface TestConfig {
   iframeCount: number;
   urls: string[];
+  delayMs?: number;
 }
 
 export interface TestResults {

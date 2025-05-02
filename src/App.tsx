@@ -155,6 +155,25 @@ function App() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Delay between iframe loads (ms)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={config.delayMs ?? 0}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        delayMs: Math.max(0, parseInt(e.target.value) || 0),
+                      }))
+                    }
+                    className="input w-full"
+                    title="Delay in milliseconds between each iframe load"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Select Test Set
                   </label>
                   <select
@@ -349,29 +368,69 @@ function App() {
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 h-0 overflow-hidden">
-          {isRunning &&
-            Array.from({ length: config.iframeCount }).map((_, i) => (
-              <iframe
-                key={i}
-                src="/test-frame.html"
-                style={{ width: 0, height: 0, border: "none" }}
-                onLoad={() => {
-                  const message = {
-                    type: "START_TEST",
-                    urls: config.urls,
-                    iframeId: i,
-                  };
-                  (
-                    document.getElementsByTagName("iframe")[
-                      i
-                    ] as HTMLIFrameElement
-                  ).contentWindow?.postMessage(message, "*");
-                }}
-              />
-            ))}
+          {isRunning && (
+            <StaggeredIframes
+              count={config.iframeCount}
+              delayMs={config.delayMs ?? 0}
+              urls={config.urls}
+            />
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function StaggeredIframes({
+  count,
+  delayMs,
+  urls,
+}: {
+  count: number;
+  delayMs: number;
+  urls: string[];
+}) {
+  const [loaded, setLoaded] = React.useState(0);
+
+  React.useEffect(() => {
+    setLoaded(0);
+    if (count === 0) return;
+    let cancelled = false;
+    let timeout: NodeJS.Timeout;
+    function loadNext(i: number) {
+      if (cancelled) return;
+      setLoaded((l) => Math.max(l, i + 1));
+      if (i + 1 < count) {
+        timeout = setTimeout(() => loadNext(i + 1), delayMs);
+      }
+    }
+    loadNext(0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [count, delayMs, urls]);
+
+  return (
+    <>
+      {Array.from({ length: loaded }).map((_, i) => (
+        <iframe
+          key={i}
+          src="/test-frame.html"
+          style={{ width: 0, height: 0, border: "none" }}
+          onLoad={() => {
+            const message = {
+              type: "START_TEST",
+              urls,
+              iframeId: i,
+            };
+            (
+              document.getElementsByTagName("iframe")[i] as HTMLIFrameElement
+            ).contentWindow?.postMessage(message, "*");
+          }}
+        />
+      ))}
+    </>
   );
 }
 
