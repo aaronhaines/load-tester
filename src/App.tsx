@@ -42,6 +42,8 @@ function App() {
   const [multiDelay, setMultiDelay] = useState<number>(0);
   const [multiRunning, setMultiRunning] = useState(false);
   const [multiTimings, setMultiTimings] = useState<number[]>([]);
+  const [multiShowFrames, setMultiShowFrames] = useState(false);
+  const multiVisibleStartTimes = React.useRef<number[]>([]);
 
   useEffect(() => {
     // Initialize textarea with default URLs
@@ -462,8 +464,14 @@ function App() {
                   <div>
                     <button
                       onClick={() => {
-                        setMultiRunning(true);
+                        setMultiShowFrames(false);
                         setMultiTimings([]);
+                        multiVisibleStartTimes.current = [];
+                        setMultiRunning(false);
+                        setTimeout(() => {
+                          setMultiShowFrames(true);
+                          setMultiRunning(true);
+                        }, 0);
                       }}
                       disabled={multiRunning || !multiUrl}
                       className="btn btn-primary w-full"
@@ -522,6 +530,57 @@ function App() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {multiShowFrames && multiUrl && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium mb-4">Live Iframes</h3>
+                  {/*
+                    Note: The load time shown is for the iframe's load event, which fires when the top-level document is loaded.
+                    For cross-origin iframes, it is not possible to measure when all assets (scripts, images, etc.) have loaded due to browser security restrictions (same-origin policy).
+                    For same-origin iframes, you could inject code to postMessage when all assets are loaded, but this is not possible for most public sites.
+                  */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[80vh] overflow-auto">
+                    {Array.from({ length: multiCount }).map((_, i) => (
+                      <div key={i} className="flex flex-col items-center">
+                        <div className="mb-2 text-sm text-gray-700 font-mono h-6 flex items-center justify-center">
+                          {typeof multiTimings[i] === "number"
+                            ? `Load: ${multiTimings[i].toFixed(2)} ms`
+                            : "Loading..."}
+                        </div>
+                        <iframe
+                          id={`multi-iframe-visible-${i}`}
+                          src={multiUrl}
+                          title={`App Iframe ${i + 1}`}
+                          width={400}
+                          height={300}
+                          style={{
+                            border: "1px solid #ccc",
+                            background: "#fff",
+                          }}
+                          loading="lazy"
+                          onLoad={() => {
+                            const now = performance.now();
+                            if (!multiVisibleStartTimes.current[i]) {
+                              // If not set, set to now - this should not happen, but fallback
+                              multiVisibleStartTimes.current[i] = now;
+                            }
+                            setMultiTimings((prev) => {
+                              const arr = [...prev];
+                              arr[i] = now - multiVisibleStartTimes.current[i];
+                              return arr;
+                            });
+                          }}
+                          ref={(el) => {
+                            if (el && !multiVisibleStartTimes.current[i]) {
+                              multiVisibleStartTimes.current[i] =
+                                performance.now();
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
