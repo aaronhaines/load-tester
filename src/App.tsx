@@ -35,6 +35,9 @@ function App() {
   const [completedFrames, setCompletedFrames] = useState<number>(0);
   const [urlInput, setUrlInput] = useState(urlConfig.urls.join("\n"));
   const [selectedTestSet, setSelectedTestSet] = useState<string>("");
+  const [runStats, setRunStats] = useState<{ count: number; totalAvg: number }>(
+    { count: 0, totalAvg: 0 }
+  );
 
   useEffect(() => {
     // Initialize textarea with default URLs
@@ -92,13 +95,26 @@ function App() {
 
         if (iframeResults.length === config.iframeCount) {
           const endTime = performance.now();
-          setResults({
+          const newResults = {
             results: iframeResults,
             startTime,
             endTime,
             totalDuration: endTime - startTime,
-          });
+          };
+          setResults(newResults);
           setIsRunning(false);
+          // Update runStats
+          setRunStats((prev) => {
+            const thisAvg =
+              iframeResults.reduce((acc, r) => acc + r.totalDuration, 0) /
+              iframeResults.length;
+            const newCount = prev.count + 1;
+            const newTotalAvg =
+              prev.count === 0
+                ? thisAvg
+                : (prev.totalAvg * prev.count + thisAvg) / newCount;
+            return { count: newCount, totalAvg: newTotalAvg };
+          });
           window.removeEventListener("message", handleMessage);
         }
       }
@@ -131,6 +147,32 @@ function App() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8 px-2">
           Chrome Asset Load Contention Tester
         </h1>
+
+        {/* Test Run Stats Display */}
+        <div className="mb-6 flex items-center gap-6">
+          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-6">
+            <div>
+              <span className="text-gray-700 font-medium">Test Runs:</span>
+              <span className="ml-2 font-bold">{runStats.count}</span>
+            </div>
+            <div>
+              <span className="text-gray-700 font-medium">
+                Average Load Time Across Runs:
+              </span>
+              <span className="ml-2 font-bold">
+                {runStats.count > 0 ? runStats.totalAvg.toFixed(2) : "-"} ms
+              </span>
+            </div>
+            <button
+              className="btn btn-secondary ml-4"
+              onClick={() => setRunStats({ count: 0, totalAvg: 0 })}
+              disabled={isRunning}
+              title="Reset test run statistics"
+            >
+              Reset Stats
+            </button>
+          </div>
+        </div>
 
         <div className="flex flex-row w-full gap-6">
           {/* Left Column - Configuration */}
